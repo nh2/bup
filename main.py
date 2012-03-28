@@ -146,11 +146,9 @@ if fix_stdout or fix_stderr:
                          close_fds=True, preexec_fn=force_tty)
     os.close(drealf)
     outf = fix_stdout and n.stdin.fileno() or None
-    errf = fix_stderr and n.stdin.fileno() or None
 else:
     n = None
     outf = None
-    errf = None
 
 
 class SigException(Exception):
@@ -168,7 +166,7 @@ p = None
 try:
     try:
         c = (do_profile and [sys.executable, '-m', 'cProfile'] or []) + subcmd
-        if not n and not outf and not errf:
+        if not n and not outf:
             # shortcut when no bup-newliner stuff is needed
             os.execvp(c[0], c)
         else:
