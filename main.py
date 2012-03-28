@@ -172,7 +172,8 @@ try:
             # shortcut when no bup-newliner stuff is needed
             os.execvp(c[0], c)
         else:
-            p = subprocess.Popen(c, stdout=outf, stderr=errf,
+            # Make sure to print stderr so that the user can see e.g. SSH errors.
+            p = subprocess.Popen(c, stdout=outf, stderr=None,
                                  preexec_fn=force_tty)
         while 1:
             # if we get a signal while waiting, we have to keep waiting, just
