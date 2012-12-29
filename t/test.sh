@@ -7,7 +7,8 @@ export BUP_DIR="$TOP/buptest.tmp"
 
 bup()
 {
-    "$TOP/bup" "$@"
+    # Coverage here does not seem to work yet
+    "python-coverage" "run" "--parallel-mode" "$TOP/bup" "$@"
 }
 
 WVSTART "init"

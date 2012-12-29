@@ -13,6 +13,8 @@ import re
 import sys
 import traceback
 
+sys.path.insert(0, '/home/niklas/src/bup')
+
 # NOTE
 # Why do we do we need the "!= main" check?  Because if you run
 # wvtest.py as a main program and it imports your test files, then
