@@ -167,6 +167,8 @@ p = None
 try:
     try:
         c = (do_profile and [sys.executable, '-m', 'cProfile'] or []) + subcmd
+        # Hack in coverage
+        c = ['coverage2', 'run', '--parallel-mode'] + c
         p = subprocess.Popen(c, stdout=outf, stderr=errf,
                              preexec_fn=force_tty)
         while 1:
