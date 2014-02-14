@@ -79,10 +79,10 @@ lib/bup/_version.py:
 runtests: all runtests-python runtests-cmdline
 
 runtests-python:
-	coverage2 run --parallel-mode wvtest.py \
+	$(COVERAGE) wvtest.py \
 		$(wildcard t/t*.py) \
 		$(filter-out lib/bup/t/tmetadata.py,$(wildcard lib/*/t/t*.py))
-	coverage2 run --parallel-mode wvtest.py lib/bup/t/tmetadata.py
+	$(COVERAGE) wvtest.py lib/bup/t/tmetadata.py
 
 runtests-cmdline: all
 	t/test.sh

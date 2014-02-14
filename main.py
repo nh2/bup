@@ -168,7 +168,10 @@ try:
     try:
         c = (do_profile and [sys.executable, '-m', 'cProfile'] or []) + subcmd
         # Hack in coverage
-        c = ['coverage2', 'run', '--parallel-mode'] + c
+        import shlex
+        coverage_append = shlex.split(os.environ.get('COVERAGE', ''))
+        # print "appending", coverage_append
+        c = coverage_append + c
         p = subprocess.Popen(c, stdout=outf, stderr=errf,
                              preexec_fn=force_tty)
         while 1:
