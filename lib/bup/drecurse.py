@@ -1,9 +1,17 @@
 
 import stat, os
 
-from bup.helpers import add_error, should_rx_exclude_path, debug1, resolve_parent
+from bup.helpers import add_error, should_rx_exclude_path, debug1, resolve_parent, log
 import bup.xstat as xstat
 
+scandir = None
+try:
+    # scandir allows much faster directory traversals, but is
+    # only included in the stanard library from Python 3.3 upwards.
+    import scandir
+except ImportError:
+    log('Warning: scandir support missing; install python-scandir'
+        ' to speed up directory traversals.\n')
 
 try:
     O_LARGEFILE = os.O_LARGEFILE
@@ -36,15 +44,36 @@ class OsFile:
         return xstat.fstat(self.fd)
 
 
+def _filename_stat_generator(path):
+    """Yields all file entry names (not prefixed with path) and their
+    stat info; stat errors are skipped over with add_error().
+
+    Uses a fast scandir based traversal when scandir is available.
+    """
+    if scandir is not None:
+        for entry in scandir.scandir(path):
+            n = entry.name
+            try:
+                # Uses cached DirEntry data where available
+                st = entry.stat(follow_symlinks=False)
+                yield (n,st)
+            except OSError as e:
+                add_error(Exception('%s: %s' % (resolve_parent(n), str(e))))
+                continue
+    else:
+        for n in os.listdir(path):
+            try:
+                st = xstat.lstat(n)
+                yield (n,st)
+            except OSError as e:
+                add_error(Exception('%s: %s' % (resolve_parent(n), str(e))))
+                continue
+
+
 _IFMT = stat.S_IFMT(0xffffffff)  # avoid function call in inner loop
 def _dirlist():
     l = []
-    for n in os.listdir('.'):
-        try:
-            st = xstat.lstat(n)
-        except OSError as e:
-            add_error(Exception('%s: %s' % (resolve_parent(n), str(e))))
-            continue
+    for (n,st) in _filename_stat_generator('.'):
         if (st.st_mode & _IFMT) == stat.S_IFDIR:
             n += '/'
         l.append((n,st))
