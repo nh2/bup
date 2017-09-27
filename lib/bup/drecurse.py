@@ -48,14 +48,15 @@ def _filename_stat_generator(path):
     """Yields all file entry names (not prefixed with path) and their
     stat info; stat errors are skipped over with add_error().
 
-    Uses a fast scandir based traversal when scandir is available.
+    Uses a fast/streaming, scandir based traversal when scandir is available.
     """
     if scandir is not None:
         for entry in scandir.scandir(path):
             n = entry.name
             try:
-                # Uses cached DirEntry data where available
-                st = entry.stat(follow_symlinks=False)
+                # We need to use xstat instead of entry.stat() because
+                # entry.stat() uses Python's normal floating-point mtimes.
+                st = xstat.lstat(n)
                 yield (n,st)
             except OSError as e:
                 add_error(Exception('%s: %s' % (resolve_parent(n), str(e))))
